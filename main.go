@@ -45,7 +45,7 @@ func Handler(conn net.Conn, messages chan string, responsechan chan *res) {
 			continue
 		}
 		recvpack.lenght = lenght
-		fmt.Println(recvpack.lenght, " ", string(recvpack.buf[0:recvpack.lenght]))
+		//fmt.Println(recvpack.lenght, " ", string(recvpack.buf[0:recvpack.lenght]))
 
 		result, cmdlist := ParseCmd(remainpack, recvpack)
 		switch result {
