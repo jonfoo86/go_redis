@@ -15,7 +15,7 @@ type res struct {
 }
 
 var (
-	cachemap map[string]string
+	cachemap  = make(map[string]string)
 )
 
 func getProcess(cmdlist []string) []byte {
