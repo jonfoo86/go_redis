@@ -3,6 +3,7 @@ package main
 import (
 	"fmt"
 	"net"
+	"runtime"
 )
 
 func PrintMsg(messages chan string) {
@@ -67,6 +68,7 @@ func Handler(conn net.Conn, messages chan string, responsechan chan *res) {
 }
 
 func main() {
+	runtime.GOMAXPROCS(3) // 最多使用2个核
 	ln, err := net.Listen("tcp", ":7000")
 	if err != nil {
 		// handle error
