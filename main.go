@@ -50,7 +50,7 @@ func Handler(conn net.Conn, messages chan string, responsechan chan *res) {
 		result, cmdlist := ParseCmd(remainpack, recvpack)
 		switch result {
 		case RS_Ok:
-			fmt.Println("cmdlist:", cmdlist)
+			//fmt.Println("cmdlist:", cmdlist)
 			request := new(req)
 			request.cmdlist = cmdlist
 			request.conn = conn
@@ -67,7 +67,7 @@ func Handler(conn net.Conn, messages chan string, responsechan chan *res) {
 }
 
 func main() {
-	ln, err := net.Listen("tcp", ":8080")
+	ln, err := net.Listen("tcp", ":7000")
 	if err != nil {
 		// handle error
 	}
