@@ -1,7 +1,6 @@
 package main
 
 import (
-	"fmt"
 	"net"
 )
 
@@ -23,7 +22,7 @@ func getProcess(cmdlist []string) []byte {
 	if v, ok := cachemap[cmdlist[1]]; ok {
 		return okResponse(v)
 	}
-	okResponse("Key Not Found")
+	return okResponse("Key Not Found")
 }
 
 func setProcess(cmdlist []string) []byte {
