@@ -1,6 +1,7 @@
 package main
 
 import (
+	"fmt"
 	"net"
 )
 
@@ -14,12 +15,19 @@ type res struct {
 	buf  []byte
 }
 
-func getProcess(cmdlist []string) []byte {
-	return okResponse("get ok ")
+var (
+	cachemap map[string]string
+)
 
+func getProcess(cmdlist []string) []byte {
+	if v, ok := cachemap[cmdlist[1]]; ok {
+		return okResponse(v)
+	}
+	okResponse("Key Not Found")
 }
 
 func setProcess(cmdlist []string) []byte {
+	cachemap[cmdlist[1]] = cmdlist[2]
 	return okResponse("set ok ")
 
 }
