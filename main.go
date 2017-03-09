@@ -6,14 +6,6 @@ import (
 	"runtime"
 )
 
-func PrintMsg(messages chan string) {
-	for {
-		msg := <-messages
-		fmt.Print(msg)
-	}
-
-}
-
 func checkError(err error, info string) (res bool) {
 	if err != nil {
 		fmt.Println(info + "  " + err.Error())
@@ -22,20 +14,20 @@ func checkError(err error, info string) (res bool) {
 	return true
 }
 
-func sendRes(reschan chan *res)  {
-	for{
-		response := <- reschan
+func responseHandler(reschan chan *res) {
+	for {
+		response := <-reschan
 		response.conn.Write(response.buf)
 	}
 
 }
 
-func Handler(conn net.Conn, messages chan string, responsechan chan *res) {
+func requestHandler(conn net.Conn, requestchan chan *req) {
 
 	fmt.Println("connection is connected from ...", conn.RemoteAddr().String())
 
 	recvpack := new(socketPack)
-	remainpack := new(socketPack)
+	cachepack := new(socketPack)
 	for {
 		lenght, err := conn.Read(recvpack.buf[:])
 		if checkError(err, "Connection") == false {
@@ -45,17 +37,18 @@ func Handler(conn net.Conn, messages chan string, responsechan chan *res) {
 		if lenght <= 0 {
 			continue
 		}
-		recvpack.lenght = lenght
-		//fmt.Println(recvpack.lenght, " ", string(recvpack.buf[0:recvpack.lenght]))
+		recvpack.length = lenght
+		//fmt.Println(recvpack.length, " ", string(recvpack.buf[0:recvpack.length]))
 
-		result, cmdlist := ParseCmd(remainpack, recvpack)
+		result, cmdlist := cmdParse(cachepack, recvpack)
 		switch result {
 		case RS_Ok:
 			//fmt.Println("cmdlist:", cmdlist)
 			request := new(req)
 			request.cmdlist = cmdlist
 			request.conn = conn
-			responsechan <-ProcessReq(request)
+			requestchan <- request
+
 			continue
 		case RS_Fail:
 			continue
@@ -67,6 +60,13 @@ func Handler(conn net.Conn, messages chan string, responsechan chan *res) {
 
 }
 
+func cmdHandler(responsechan chan *res, requestchan chan *req) {
+	for {
+		request := <-requestchan
+		responsechan <- cmdProcess(request)
+	}
+}
+
 func main() {
 	runtime.GOMAXPROCS(3) // 最多使用2个核
 	ln, err := net.Listen("tcp", ":7000")
@@ -74,15 +74,15 @@ func main() {
 		// handle error
 	}
 
-	messages := make(chan string)
 	responsechan := make(chan *res, 10000)
-	go sendRes(responsechan)
-	go PrintMsg(messages)
+	requestchan := make(chan *req, 10000)
+	go responseHandler(responsechan)
+	go cmdHandler(responsechan, requestchan)
 	for {
 		conn, err := ln.Accept()
 		if err != nil {
 			// handle error
 		}
-		go Handler(conn, messages, responsechan)
+		go requestHandler(conn, requestchan)
 	}
 }
