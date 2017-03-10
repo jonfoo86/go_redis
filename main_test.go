@@ -81,8 +81,7 @@ func TestParseConglutinationCmd(t *testing.T) {
 	command := "*3\r\n$3\r\nSET\r\n$5\r\nHENRY\r\n$8\r\nHENRYFAN\r\n*2\r\n$3\r\nGet\r\n$5\r\nHENRY\r\n$8\r\n"
 	copy(packb.buf[:], command)
 	packb.length = len(command)
-	//fmt.Println(packa.buf)
-	//fmt.Println(packb.buf)
+
 	for {
 		result, cmdlist := cmdParse(packa, packb)
 		fmt.Println("result1:", result)
@@ -91,7 +90,6 @@ func TestParseConglutinationCmd(t *testing.T) {
 		} else {
 			fmt.Println("cmdlist:", cmdlist)
 		}
-
 		//fmt.Print("after2:", packa)
 	}
 
@@ -111,5 +109,14 @@ func TestParseConglutinationCmd(t *testing.T) {
 		}
 
 	}
+
+}
+
+func TestGetByteNum(t *testing.T) {
+	fmt.Println(getByteNum(0))
+	fmt.Println(getByteNum(10))
+	fmt.Println(getByteNum(11))
+	fmt.Println(getByteNum(100))
+	fmt.Println(getByteNum(1001))
 
 }
