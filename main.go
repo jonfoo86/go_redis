@@ -1,9 +1,14 @@
 package main
 
 import (
+	"flag"
 	"fmt"
+	"log"
 	"net"
+	"os"
+	"os/signal"
 	"runtime"
+	"runtime/pprof"
 )
 
 func checkError(err error, info string) (res bool) {
@@ -67,8 +72,7 @@ func cmdHandler(responsechan chan *res, requestchan chan *req) {
 	}
 }
 
-func main() {
-	runtime.GOMAXPROCS(3) // 最多使用2个核
+func acceptHandler() {
 	ln, err := net.Listen("tcp", ":7000")
 	if err != nil {
 		// handle error
@@ -85,4 +89,30 @@ func main() {
 		}
 		go requestHandler(conn, requestchan)
 	}
+}
+
+var cpuprofile = flag.String("cpuprofile", "", "write cpu profile to file")
+
+func main() {
+	runtime.GOMAXPROCS(1) // 最多使用2个核
+	flag.Parse()
+	if *cpuprofile != "" {
+		f, err := os.Create(*cpuprofile)
+		if err != nil {
+			log.Fatal(err)
+		}
+		pprof.StartCPUProfile(f)
+		defer pprof.StopCPUProfile()
+	}
+
+
+	go acceptHandler()
+	c := make(chan os.Signal, 1)
+	signal.Notify(c, os.Interrupt)
+
+	fmt.Println("pid: ", os.Getpid() )
+	fmt.Println("Wartint signal !")
+	// Block until a signal is received.
+	s := <-c
+	fmt.Println("Got signal:", s, " stop ")
 }
