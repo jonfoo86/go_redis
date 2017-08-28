@@ -6,7 +6,6 @@ import (
 	"net"
 	"regexp"
 	"strconv"
-	"sync"
 )
 
 type req struct {
@@ -21,23 +20,17 @@ type res struct {
 
 var (
 	cachemap = make(map[string]string)
-	mutex sync.RWMutex
 )
 
 func getProcess(cmdlist []string) []byte {
-	mutex.RLock()
 	if v, ok := cachemap[cmdlist[1]]; ok {
-		mutex.RUnlock()
 		return okResponse(v)
 	}
-	mutex.RUnlock()
 	return okResponse("Key Not Found")
 }
 
 func setProcess(cmdlist []string) []byte {
-	mutex.Lock()
 	cachemap[cmdlist[1]] = cmdlist[2]
-	mutex.Unlock()
 	return okResponse("set ok ")
 
 }
@@ -45,7 +38,6 @@ func setProcess(cmdlist []string) []byte {
 func keysProcess(cmdlist []string) []byte {
 	matchlist := list.New()
 	var validID = regexp.MustCompile(cmdlist[1])
-	mutex.RLock()
 	for k, _ := range cachemap {
 		if validID.MatchString(k) {
 			matchlist.PushBack(k)
@@ -54,9 +46,7 @@ func keysProcess(cmdlist []string) []byte {
 			break
 		}
 	}
-	mutex.RUnlock()
 	return strlistResponse(matchlist)
-
 }
 
 func okResponse(str string) []byte {
