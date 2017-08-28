@@ -7,8 +7,8 @@ import (
 	"net"
 	"os"
 	"os/signal"
-	"runtime"
 	"runtime/pprof"
+	"runtime"
 )
 
 func checkError(err error, info string) (res bool) {
@@ -94,7 +94,7 @@ func acceptHandler() {
 var cpuprofile = flag.String("cpuprofile", "", "write cpu profile to file")
 
 func main() {
-	runtime.GOMAXPROCS(1) // 最多使用2个核
+	runtime.GOMAXPROCS(2) // 最多使用2个核
 	flag.Parse()
 	if *cpuprofile != "" {
 		f, err := os.Create(*cpuprofile)
@@ -105,12 +105,11 @@ func main() {
 		defer pprof.StopCPUProfile()
 	}
 
-
 	go acceptHandler()
 	c := make(chan os.Signal, 1)
 	signal.Notify(c, os.Interrupt)
 
-	fmt.Println("pid: ", os.Getpid() )
+	fmt.Println("pid: ", os.Getpid())
 	fmt.Println("Wartint signal !")
 	// Block until a signal is received.
 	s := <-c
