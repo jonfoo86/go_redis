@@ -23,6 +23,7 @@ func responseHandler(reschan chan *res) {
 	for {
 		response := <-reschan
 		response.conn.Write(response.buf)
+		DelRes(response)
 	}
 
 }

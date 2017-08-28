@@ -6,6 +6,7 @@ import (
 	"net"
 	"regexp"
 	"strconv"
+	"sync"
 )
 
 type req struct {
@@ -20,7 +21,16 @@ type res struct {
 
 var (
 	cachemap = make(map[string]string)
+	pipe     = &sync.Pool{New: func() interface{} { return new(res) }}
 )
+
+func NewRes() *res {
+	return pipe.Get().(*res)
+}
+
+func DelRes(ptr *res) {
+	pipe.Put(ptr)
+}
 
 func getProcess(cmdlist []string) []byte {
 	if v, ok := cachemap[cmdlist[1]]; ok {
@@ -109,7 +119,7 @@ func errorProcess(str string) []byte {
 }
 
 func cmdProcess(request *req) *res {
-	response := new(res)
+	response := NewRes()
 	response.conn = request.conn
 	if len(request.cmdlist) == 0 {
 		return response
