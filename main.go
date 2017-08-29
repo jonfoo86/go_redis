@@ -95,7 +95,7 @@ func acceptHandler() {
 var cpuprofile = flag.String("cpuprofile", "", "write cpu profile to file")
 
 func main() {
-	runtime.GOMAXPROCS(2) // 最多使用2个核
+	runtime.GOMAXPROCS(4) // 最多使用2个核
 	flag.Parse()
 	if *cpuprofile != "" {
 		f, err := os.Create(*cpuprofile)

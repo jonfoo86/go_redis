@@ -20,7 +20,7 @@ type res struct {
 }
 
 var (
-	cachemap = make(map[string]string)
+	cachemap = make(map[string]*string)
 	pipe     = &sync.Pool{New: func() interface{} { return new(res) }}
 )
 
@@ -34,13 +34,13 @@ func DelRes(ptr *res) {
 
 func getProcess(cmdlist []string) []byte {
 	if v, ok := cachemap[cmdlist[1]]; ok {
-		return okResponse(v)
+		return okResponse(*v)
 	}
 	return okResponse("Key Not Found")
 }
 
 func setProcess(cmdlist []string) []byte {
-	cachemap[cmdlist[1]] = cmdlist[2]
+	cachemap[cmdlist[1]] = &(cmdlist[2])
 	return okResponse("set ok ")
 
 }
