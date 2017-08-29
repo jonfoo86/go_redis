@@ -90,7 +90,7 @@ func acceptHandler() {
 
 	responsechan := make(chan *res, 10000)
 	requestchan := make(chan *req, 10000)
-	for i := 0; i < 3; i++ {
+	for i := 0; i < runtime.NumCPU(); i++ {
 		go responseHandler(responsechan)
 	}
 	go cmdHandler(responsechan, requestchan)
@@ -106,7 +106,7 @@ func acceptHandler() {
 var cpuprofile = flag.String("cpuprofile", "", "write cpu profile to file")
 
 func main() {
-	runtime.GOMAXPROCS(1) // 最多使用2个核
+	runtime.GOMAXPROCS(runtime.NumCPU() - 1) // 最多使用2个核
 	flag.Parse()
 	if *cpuprofile != "" {
 		f, err := os.Create(*cpuprofile)

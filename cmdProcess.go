@@ -20,9 +20,9 @@ type res struct {
 }
 
 var (
-	cachemap        = make(map[string]*string)
-	res_pipe            = &sync.Pool{New: func() interface{} { return new(res) }}
-	req_pipe            = &sync.Pool{New: func() interface{} { return new(req) }}
+	cachemap = make(map[string]*string, 1000000)
+	res_pipe = &sync.Pool{New: func() interface{} { return new(res) }}
+	req_pipe = &sync.Pool{New: func() interface{} { return new(req) }}
 
 	NotFound string = "Key Not Found"
 	SetOk    string = "Set Ok"
