@@ -44,18 +44,19 @@ func requestHandler(conn net.Conn, requestchan chan *req) {
 			continue
 		}
 		recvpack.length = lenght
+		tmppack := recvpack
 		//fmt.Println(recvpack.length, " ", string(recvpack.buf[0:recvpack.length]))
-
-		result, cmdlist := cmdParse(cachepack, recvpack)
+	Parse:
+		result, cmdlist := cmdParse(cachepack, tmppack)
 		switch result {
 		case RS_Ok:
 			//fmt.Println("cmdlist:", cmdlist)
-			request := new(req)
+			request := NewReq()
 			request.cmdlist = cmdlist
 			request.conn = conn
 			requestchan <- request
-
-			continue
+			tmppack = nil
+			goto  Parse
 		case RS_Fail:
 			continue
 		case RS_Error:
@@ -70,6 +71,7 @@ func cmdHandler(responsechan chan *res, requestchan chan *req) {
 	for {
 		request := <-requestchan
 		responsechan <- cmdProcess(request)
+		DelReq(request)
 	}
 }
 

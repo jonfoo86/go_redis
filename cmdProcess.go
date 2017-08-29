@@ -21,17 +21,26 @@ type res struct {
 
 var (
 	cachemap        = make(map[string]*string)
-	pipe            = &sync.Pool{New: func() interface{} { return new(res) }}
+	res_pipe            = &sync.Pool{New: func() interface{} { return new(res) }}
+	req_pipe            = &sync.Pool{New: func() interface{} { return new(req) }}
+
 	NotFound string = "Key Not Found"
 	SetOk    string = "Set Ok"
 )
 
 func NewRes() *res {
-	return pipe.Get().(*res)
+	return res_pipe.Get().(*res)
 }
 
 func DelRes(ptr *res) {
-	pipe.Put(ptr)
+	res_pipe.Put(ptr)
+}
+func NewReq() *req {
+	return req_pipe.Get().(*req)
+}
+
+func DelReq(ptr *req) {
+	req_pipe.Put(ptr)
 }
 
 func getProcess(cmdlist []*string) []byte {
