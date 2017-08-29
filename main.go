@@ -7,8 +7,8 @@ import (
 	"net"
 	"os"
 	"os/signal"
-	"runtime/pprof"
 	"runtime"
+	"runtime/pprof"
 )
 
 func checkError(err error, info string) (res bool) {
@@ -81,7 +81,9 @@ func acceptHandler() {
 
 	responsechan := make(chan *res, 10000)
 	requestchan := make(chan *req, 10000)
-	go responseHandler(responsechan)
+	for i := 0; i < 3; i++ {
+		go responseHandler(responsechan)
+	}
 	go cmdHandler(responsechan, requestchan)
 	for {
 		conn, err := ln.Accept()
@@ -95,7 +97,7 @@ func acceptHandler() {
 var cpuprofile = flag.String("cpuprofile", "", "write cpu profile to file")
 
 func main() {
-	runtime.GOMAXPROCS(4) // 最多使用2个核
+	runtime.GOMAXPROCS(1) // 最多使用2个核
 	flag.Parse()
 	if *cpuprofile != "" {
 		f, err := os.Create(*cpuprofile)

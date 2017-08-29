@@ -20,10 +20,10 @@ type res struct {
 }
 
 var (
-	cachemap = make(map[string]*string)
-	pipe     = &sync.Pool{New: func() interface{} { return new(res) }}
+	cachemap        = make(map[string]*string)
+	pipe            = &sync.Pool{New: func() interface{} { return new(res) }}
 	NotFound string = "Key Not Found"
-	SetOk string = "Set Ok"
+	SetOk    string = "Set Ok"
 )
 
 func NewRes() *res {
