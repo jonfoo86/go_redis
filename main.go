@@ -27,7 +27,27 @@ func responseHandler(reschan chan *res) {
 	}
 
 }
+func requestParse(conn net.Conn, requestchan chan *req, oldpack *socketPack, newpack *socketPack) bool {
+	for {
+		result, cmdlist := cmdParse(oldpack, newpack)
+		switch result {
+		case RS_Ok:
+			//fmt.Println("cmdlist:", cmdlist)
+			request := NewReq()
+			request.cmdlist = cmdlist
+			request.conn = conn
+			requestchan <- request
+			newpack = nil
+		case RS_Fail:
+			return true
+		case RS_Error:
+			return false
+		}
 
+	}
+
+	return true
+}
 func requestHandler(conn net.Conn, requestchan chan *req) {
 
 	fmt.Println("connection is connected from ...", conn.RemoteAddr().String())
@@ -44,25 +64,12 @@ func requestHandler(conn net.Conn, requestchan chan *req) {
 			continue
 		}
 		recvpack.length = lenght
-		tmppack := recvpack
-		//fmt.Println(recvpack.length, " ", string(recvpack.buf[0:recvpack.length]))
-	Parse:
-		result, cmdlist := cmdParse(cachepack, tmppack)
-		switch result {
-		case RS_Ok:
-			//fmt.Println("cmdlist:", cmdlist)
-			request := NewReq()
-			request.cmdlist = cmdlist
-			request.conn = conn
-			requestchan <- request
-			tmppack = nil
-			goto  Parse
-		case RS_Fail:
-			continue
-		case RS_Error:
+		if !requestParse(conn, requestchan, cachepack, recvpack) {
 			conn.Close()
 			break
 		}
+		//fmt.Println(recvpack.length, " ", string(recvpack.buf[0:recvpack.length]))
+
 	}
 
 }

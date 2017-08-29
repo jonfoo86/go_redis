@@ -67,13 +67,14 @@ func getStr(buf []byte, length int) (string, ResultType, int) {
 func cmdParse(oldpack *socketPack, newpack *socketPack) (ResultType, []*string) {
 	var strarray []*string
 	var pack *socketPack
-	if  newpack!=nil {
+	if oldpack.length > 0 {
 		pack = oldpack
-	}else if oldpack.length > 0  {
-		pack = oldpack
-		copy(oldpack.buf[oldpack.length:], newpack.buf[0:newpack.length])
-		pack.length += newpack.length
-	} else if newpack.length > 0 {
+
+		if newpack != nil {
+			copy(oldpack.buf[oldpack.length:], newpack.buf[0:newpack.length])
+			pack.length += newpack.length
+		}
+	} else if newpack!=nil && newpack.length > 0 {
 		pack = newpack
 	} else {
 		return RS_Fail, strarray
