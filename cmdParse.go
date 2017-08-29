@@ -64,8 +64,8 @@ func getStr(buf []byte, length int) (string, ResultType, int) {
 	return string(buf[0:pos]), RS_Ok, pos + 2
 }
 
-func cmdParse(oldpack *socketPack, newpack *socketPack) (ResultType, []string) {
-	var strarray []string
+func cmdParse(oldpack *socketPack, newpack *socketPack) (ResultType, []*string) {
+	var strarray []*string
 	var pack *socketPack
 	if oldpack.length > 0 {
 		pack = oldpack
@@ -91,7 +91,7 @@ func cmdParse(oldpack *socketPack, newpack *socketPack) (ResultType, []string) {
 	if pos+5*paramcount > pack.length {
 		return RS_Fail, strarray
 	}
-	strarray = make([]string, paramcount)
+	strarray = make([]*string, paramcount)
 	for i := 0; i < paramcount && pos < pack.length; i++ {
 		if pack.buf[pos] == '$' {
 			pos += 1
@@ -117,7 +117,7 @@ func cmdParse(oldpack *socketPack, newpack *socketPack) (ResultType, []string) {
 			return ok2, strarray
 		}
 		//fmt.Println("strlen:", count, " parse str:", str)
-		strarray[i] = str
+		strarray[i] = &str
 		pos += len2
 		//fmt.Println("lose buf:" , string( pack.buf[pos:pack.length]), "  pos: ",pos, " len:" ,  pack.length)
 	}

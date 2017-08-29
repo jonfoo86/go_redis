@@ -11,7 +11,7 @@ import (
 
 type req struct {
 	conn    net.Conn
-	cmdlist []string
+	cmdlist []*string
 }
 
 type res struct {
@@ -20,8 +20,10 @@ type res struct {
 }
 
 var (
-	cachemap = make(map[string]string)
+	cachemap = make(map[string]*string)
 	pipe     = &sync.Pool{New: func() interface{} { return new(res) }}
+	NotFound string = "Key Not Found"
+	SetOk string = "Set Ok"
 )
 
 func NewRes() *res {
@@ -32,22 +34,22 @@ func DelRes(ptr *res) {
 	pipe.Put(ptr)
 }
 
-func getProcess(cmdlist []string) []byte {
-	if v, ok := cachemap[cmdlist[1]]; ok {
+func getProcess(cmdlist []*string) []byte {
+	if v, ok := cachemap[*cmdlist[1]]; ok {
 		return okResponse(v)
 	}
-	return okResponse("Key Not Found")
+	return okResponse(&NotFound)
 }
 
-func setProcess(cmdlist []string) []byte {
-	cachemap[cmdlist[1]] = cmdlist[2]
-	return okResponse("set ok ")
+func setProcess(cmdlist []*string) []byte {
+	cachemap[*cmdlist[1]] = cmdlist[2]
+	return okResponse(&SetOk)
 
 }
 
-func keysProcess(cmdlist []string) []byte {
+func keysProcess(cmdlist []*string) []byte {
 	matchlist := list.New()
-	var validID = regexp.MustCompile(cmdlist[1])
+	var validID = regexp.MustCompile(*cmdlist[1])
 	for k, _ := range cachemap {
 		if validID.MatchString(k) {
 			matchlist.PushBack(k)
@@ -59,11 +61,11 @@ func keysProcess(cmdlist []string) []byte {
 	return strlistResponse(matchlist)
 }
 
-func okResponse(str string) []byte {
-	buf := make([]byte, len(str)+3)
+func okResponse(str *string) []byte {
+	buf := make([]byte, len(*str)+3)
 	copy(buf[:], "+")
-	copy(buf[1:], str)
-	copy(buf[1+len(str):], "\r\n")
+	copy(buf[1:], *str)
+	copy(buf[1+len(*str):], "\r\n")
 	return buf
 }
 
@@ -125,7 +127,7 @@ func cmdProcess(request *req) *res {
 		return response
 	}
 
-	switch request.cmdlist[0] {
+	switch *(request.cmdlist[0]) {
 	case "get", "GET":
 		response.buf = getProcess(request.cmdlist)
 	case "set", "SET":
@@ -133,7 +135,7 @@ func cmdProcess(request *req) *res {
 	case "keys", "KEYS":
 		response.buf = keysProcess(request.cmdlist)
 	default:
-		response.buf = errorProcess("Unknow Cmd :" + request.cmdlist[0])
+		response.buf = errorProcess("Unknow Cmd :" + *request.cmdlist[0])
 	}
 
 	return response
